@@ -1,0 +1,14 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgresql-keycloak
+  namespace: keycloak
+  labels:
+    app: postgresql
+spec:
+  storageClassName: csi-cinder-classic
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
