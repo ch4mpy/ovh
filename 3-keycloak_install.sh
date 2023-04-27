@@ -3,12 +3,12 @@ kubectl apply -f keycloak/keycloak-postgresql-pvc.yml
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add codecentric https://codecentric.github.io/helm-charts
 helm repo update
-helm install keycloak-db bitnami/postgresql -n keycloak --values ./keycloak/keycloak-postgresql-properties.yaml
+helm install keycloak-db bitnami/postgresql -n keycloak --values ./keycloak/keycloak-postgresql-properties.yml
 helm install keycloak codecentric/keycloakx -n keycloak -f keycloak/keycloak-install-properties.yml
-kubectl apply -f keycloak/ingress-nginx.yaml
+kubectl apply -f keycloak/ingress-nginx.yml
 set +H
 echo "+------------------------------------------------------------------------+"
-echo "|               /!\\ See comment in ingress-nginx.yaml /!\\                |"
+echo "|               /!\\ See comment in ingress-nginx.yml /!\\                |"
 echo "+------------------------------------------------------------------------+"
 echo "| kubectl edit -n ingress-nginx deployment.apps/ingress-nginx-controller |"
 echo "| to add the following to arguments:                                     |"

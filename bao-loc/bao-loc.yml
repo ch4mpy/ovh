@@ -1,0 +1,363 @@
+#---------------#
+# Configuration #
+#---------------#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bao-loc
+  namespace: demo-bao-loc
+data:
+  server.shutdown: graceful
+  oauth2-issuer: https://oidc.c4-soft.com/auth/realms/spring-addons
+  oauth2-client-id: spring-addons-bff
+  db-url: jdbc:postgresql://bao-loc-db/baoloc
+  db-username: baoloc
+  gateway-uri: https://bao-loc.demo.c4-soft.com
+  bao-loc-api-uri: http://bao-loc-api/v1
+  ui-bff-uri: http://bao-loc-bff-ui
+  ui-public-client-uri: http://bao-loc-public-client-ui
+---
+#----------#
+# Database #
+#----------#
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgresql-bao-loc
+  namespace: demo-bao-loc
+  labels:
+    app: bao-loc
+spec:
+  storageClassName: csi-cinder-classic
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bao-loc-db
+  namespace: demo-bao-loc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bao-loc-db
+  template:
+    metadata:
+      labels:
+        app: bao-loc-db
+    spec:
+      containers:
+      - name: bao-loc-db
+        image: postgres
+        ports:
+          - containerPort: 5432
+        volumeMounts:
+          - mountPath: /var/lib/postgres/data
+            name: db-data
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
+        resources: {}
+        env:
+        - name: POSTGRES_DB
+          value: baoloc
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: bao-loc
+              key: db-username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: bao-loc-secrets
+              key: db-password
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: postgresql-bao-loc
+        - name: config-volume
+          configMap:
+            name: bao-loc
+        - name: secret-volume
+          secret:
+            secretName: bao-loc-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bao-loc-db
+  namespace: demo-bao-loc
+  labels:
+    app: bao-loc-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: 5432-5432
+      port: 5432
+  selector:
+    app: bao-loc-db
+status:
+  loadBalancer: {}
+---
+#-----#
+# API #
+#-----#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bao-loc-api-v1
+  name: bao-loc-api-v1
+  namespace: demo-bao-loc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bao-loc-api-v1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bao-loc-api-v1
+    spec:
+      containers:
+      - image: ch4mp/bao-loc-api-v1
+        name: bao-loc-api-v1
+        resources: {}
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+        - name: secret-volume
+          readOnly: true
+          mountPath: /workspace/secret
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: postgresql-bao-loc
+      - name: config-volume
+        configMap:
+          name: bao-loc
+      - name: secret-volume
+        secret:
+          secretName: bao-loc-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bao-loc-api-v1
+  name: bao-loc-api-v1
+  namespace: demo-bao-loc
+spec:
+  ports:
+  - name: 80-8080
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: bao-loc-api-v1
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#---------------------------------#
+# UI with security relying on BFF #
+#---------------------------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bao-loc-bff-ui
+  name: bao-loc-bff-ui
+  namespace: demo-bao-loc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bao-loc-bff-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bao-loc-bff-ui
+    spec:
+      containers:
+      - image: ch4mp/bao-loc-bff-ui
+        name: bao-loc-bff-ui
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bao-loc-bff-ui
+  name: bao-loc-bff-ui
+  namespace: demo-bao-loc
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: bao-loc-bff-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#---------------------------------------#
+# UI configured as OAuth2 public client #
+#---------------------------------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bao-loc-public-client-ui
+  name: bao-loc-public-client-ui
+  namespace: demo-bao-loc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bao-loc-public-client-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bao-loc-public-client-ui
+    spec:
+      containers:
+      - image: ch4mp/bao-loc-public-client-ui
+        name: bao-loc-public-client-ui
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bao-loc-public-client-ui
+  name: bao-loc-public-client-ui
+  namespace: demo-bao-loc
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: bao-loc-public-client-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#---------#
+# Gateway #
+#---------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bao-loc-gateway
+  name: bao-loc-gateway
+  namespace: demo-bao-loc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bao-loc-gateway
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bao-loc-gateway
+    spec:
+      containers:
+        - image: ch4mp/bao-loc-gateway
+          imagePullPolicy: Always
+          name: bao-loc-gateway
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: bao-loc
+      - name: secret-volume
+        secret:
+          secretName: bao-loc-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bao-loc-gateway
+  name: bao-loc-gateway
+  namespace: demo-bao-loc
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: bao-loc-gateway
+  type: ClusterIP
+status:
+  loadBalancer: {}

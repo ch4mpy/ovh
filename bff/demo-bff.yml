@@ -1,0 +1,208 @@
+#---------------#
+# Configuration #
+#---------------#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bff
+  namespace: demo-bff
+data:
+  server.shutdown: graceful
+  keycloak-issuer: https://oidc.c4-soft.com/auth/realms/spring-addons
+  keycloak-client-id: spring-addons-bff
+  gateway-uri: https://bff.demo.c4-soft.com
+  greetings-api-uri: http://bff-greetings-api/greetings
+  angular-uri: http://bff-angular-ui
+---
+#-----#
+# API #
+#-----#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bff-greetings-api
+  name: bff-greetings-api
+  namespace: demo-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bff-greetings-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bff-greetings-api
+    spec:
+      containers:
+      - image: ch4mp/bff-greetings-api
+        name: bff-greetings-api
+        resources: {}
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 6443
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 6443
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bff-greetings-api
+  name: bff-greetings-api
+  namespace: demo-bff
+spec:
+  ports:
+  - name: 80-6443
+    port: 80
+    protocol: TCP
+    targetPort: 6443
+  selector:
+    app: bff-greetings-api
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#------------#
+# Angular UI #
+#------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bff-angular-ui
+  name: bff-angular-ui
+  namespace: demo-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bff-angular-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bff-angular-ui
+    spec:
+      containers:
+      - image: ch4mp/bff-angular-ui
+        name: bff-angular-ui
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bff-angular-ui
+  name: bff-angular-ui
+  namespace: demo-bff
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: bff-angular-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#---------#
+# Gateway #
+#---------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bff-gateway
+  name: bff-gateway
+  namespace: demo-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bff-gateway
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bff-gateway
+    spec:
+      containers:
+        - image: ch4mp/bff-gateway
+          imagePullPolicy: Always
+          name: bff-gateway
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+            - name: config-volume
+              readOnly: true
+              mountPath: /workspace/config
+            - name: secret-volume
+              readOnly: true
+              mountPath: /workspace/secret
+      volumes:
+        - name: config-volume
+          configMap:
+            name: bff
+        - name: secret-volume
+          secret:
+            secretName: bff-clients-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bff-gateway
+  name: bff-gateway
+  namespace: demo-bff
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: bff-gateway
+  type: ClusterIP
+status:
+  loadBalancer: {}
