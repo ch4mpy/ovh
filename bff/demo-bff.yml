@@ -30,78 +30,37 @@ spec:
         app: bff-gateway
     spec:
       containers:
-      - image: ch4mp/bff-gateway
-        imagePullPolicy: Always
-        name: bff-gateway
-        resources: {}
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          failureThreshold: 3
-          periodSeconds: 20
-          successThreshold: 1
-          timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          failureThreshold: 3
-          periodSeconds: 20
-          successThreshold: 1
-          timeoutSeconds: 10
-        lifecycle:
-          preStop:
-            exec:
-              command: ["sh", "-c", "sleep 10"]
-        volumeMounts:
-          - name: config-volume
-            readOnly: true
-            mountPath: /workspace/config
-          - name: secret-volume
-            readOnly: true
-            mountPath: /workspace/secret
-        env:
-        - name: AUTH0_SECRET
-          valueFrom:
-              secretKeyRef:
-                name: bff-clients-secrets
-                key: auth0-secret
-        - name: COGNITO_SECRET
-          valueFrom:
-              secretKeyRef:
-                name: bff-clients-secrets
-                key: cognito-secret
-        - name: KEYCLOAK_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: bff
-              key: keycloak-issuer
-        - name: KEYCLOAK_CLIENT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: bff
-              key: keycloak-client-id
-        - name: KEYCLOAK_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: bff-clients-secrets
-              key: keycloak-secret
-        - name: GATEWAY_URI
-          valueFrom:
-            configMapKeyRef:
-              name: bff
-              key: gateway-uri
-        - name: GREETINGS_API_URI
-          valueFrom:
-            configMapKeyRef:
-              name: bff
-              key: greetings-api-uri
-        - name: ANGULAR_URI
-          valueFrom:
-            configMapKeyRef:
-              name: bff
-              key: angular-uri
+        - image: ch4mp/bff-gateway
+          imagePullPolicy: Always
+          name: bff-gateway
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+            - name: config-volume
+              readOnly: true
+              mountPath: /workspace/config
+            - name: secret-volume
+              readOnly: true
+              mountPath: /workspace/secret
       volumes:
         - name: config-volume
           configMap:
@@ -153,19 +112,6 @@ spec:
           preStop:
             exec:
               command: ["sh", "-c", "sleep 10"]
-        env:
-        - name: KEYCLOAK_ISSUER
-          valueFrom:
-            configMapKeyRef:
-              name: bff
-              key: keycloak-issuer
-        volumeMounts:
-          - name: config-volume
-            mountPath: /workspace/config
-      volumes:
-        - name: config-volume
-          configMap:
-            name: bff
 status: {}
 ---
 apiVersion: apps/v1
