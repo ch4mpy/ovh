@@ -12,7 +12,7 @@ data:
   keycloak-client-id: spring-addons-bff
   gateway-uri: https://bff.demo.c4-soft.com
   greetings-api-uri: http://bff-greetings-api/greetings
-  angular-uri: http://bff-angular-ui
+  ui-uri: http://bff-angular-ui
 ---
 #-----#
 # API #
@@ -42,7 +42,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
-            port: 6443
+            port: 7443
           failureThreshold: 3
           periodSeconds: 20
           successThreshold: 1
@@ -50,7 +50,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
-            port: 6443
+            port: 7443
           failureThreshold: 3
           periodSeconds: 20
           successThreshold: 1
@@ -59,6 +59,14 @@ spec:
           preStop:
             exec:
               command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: bff
 status: {}
 ---
 apiVersion: v1
@@ -70,10 +78,10 @@ metadata:
   namespace: demo-bff
 spec:
   ports:
-  - name: 80-6443
+  - name: 80-7443
     port: 80
     protocol: TCP
-    targetPort: 6443
+    targetPort: 7443
   selector:
     app: bff-greetings-api
   type: ClusterIP
@@ -173,19 +181,19 @@ spec:
               exec:
                 command: ["sh", "-c", "sleep 10"]
           volumeMounts:
-            - name: config-volume
-              readOnly: true
-              mountPath: /workspace/config
-            - name: secret-volume
-              readOnly: true
-              mountPath: /workspace/secret
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
       volumes:
-        - name: config-volume
-          configMap:
-            name: bff
-        - name: secret-volume
-          secret:
-            secretName: bff-clients-secrets
+      - name: config-volume
+        configMap:
+          name: bff
+      - name: secret-volume
+        secret:
+          secretName: bff-clients-secrets
 status: {}
 ---
 apiVersion: v1

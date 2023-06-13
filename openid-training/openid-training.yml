@@ -1,0 +1,539 @@
+#---------------#
+# Configuration #
+#---------------#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openid-training-mobile-front
+  namespace: openid-training
+data:
+  server.shutdown: graceful
+  oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
+  oauth2-client-id: bCtRNTuQo43IQclmqxJ9QpYc6ppWeVDH
+  gateway-uri: https://openid-training.c4-soft.com
+  greetings-api-uri: http://greetings-api-v1
+  users-api-uri: http://users-api-v1
+  ui-host: https://openid-training.c4-soft.com
+  ui-path: /front-office
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openid-training-web-back
+  namespace: openid-training
+data:
+  server.shutdown: graceful
+  oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
+  oauth2-client-id: pDy3JpZoenbLk9MqXYCfJK1mpxeUwkKL
+  gateway-uri: https://openid-training.c4-soft.com
+  greetings-api-uri: http://greetings-api-v1
+  users-api-uri: http://users-api-v1
+  ui-host: http://web-back-ui
+  ui-path: /back-office
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openid-training-web-front
+  namespace: openid-training
+data:
+  server.shutdown: graceful
+  oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
+  oauth2-client-id: HVZclhV1UiBPfPpc7tjgZ5oR0JaS0LUt
+  gateway-uri: https://openid-training.c4-soft.com
+  greetings-api-uri: http://greetings-api-v1
+  users-api-uri: http://users-api-v1
+  ui-host: http://web-front-ui
+  ui-path: /front-office
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openid-training-api
+  namespace: openid-training
+data:
+  server.shutdown: graceful
+  oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
+---
+#---------------#
+# Greetings API #
+#---------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: greetings-api-v1
+  name: greetings-api-v1
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greetings-api-v1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: greetings-api-v1
+    spec:
+      containers:
+      - image: ch4mp/greetings-api-v1
+        name: greetings-api-v1
+        resources: {}
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: openid-training-api
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: greetings-api-v1
+  name: greetings-api-v1
+  namespace: openid-training
+spec:
+  ports:
+  - name: 80-8080
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: greetings-api-v1
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#-----------#
+# Users API #
+#-----------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: users-api-v1
+  name: users-api-v1
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-api-v1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: users-api-v1
+    spec:
+      containers:
+      - image: ch4mp/users-api-v1
+        name: users-api-v1
+        resources: {}
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: openid-training-api
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: users-api-v1
+  name: users-api-v1
+  namespace: openid-training
+spec:
+  ports:
+  - name: 80-8080
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: users-api-v1
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#-----------------#
+# Web back-office #
+#-----------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-back-ui
+  name: web-back-ui
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-back-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: web-back-ui
+    spec:
+      containers:
+      - image: ch4mp/openid-training-web-back-ui
+        name: web-back-ui
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-back-ui
+  name: web-back-ui
+  namespace: openid-training
+spec:
+  ports:
+  - name: 80-3000
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: web-back-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#-----------------#
+# Web front-office #
+#-----------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-front-ui
+  name: web-front-ui
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-front-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: web-front-ui
+    spec:
+      containers:
+      - image: ch4mp/openid-training-web-front-ui
+        name: web-front-ui
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-front-ui
+  name: web-front-ui
+  namespace: openid-training
+spec:
+  ports:
+  - name: 80-3000
+    port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: web-front-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#-------------------------#
+# BFF mobile front-office #
+#-------------------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mobile-front-gateway
+  name: mobile-front-gateway
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mobile-front-gateway
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mobile-front-gateway
+    spec:
+      containers:
+        - image: ch4mp/openid-training-bff
+          imagePullPolicy: Always
+          name: mobile-front-gateway
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: openid-training-mobile-front
+      - name: secret-volume
+        secret:
+          secretName: openid-training-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mobile-front-gateway
+  name: mobile-front-gateway
+  namespace: openid-training
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: mobile-front-gateway
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#----------------------#
+# BFF web front-office #
+#----------------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-front-gateway
+  name: web-front-gateway
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-front-gateway
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: web-front-gateway
+    spec:
+      containers:
+        - image: ch4mp/openid-training-bff
+          imagePullPolicy: Always
+          name: web-front-gateway
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: openid-training-web-front
+      - name: secret-volume
+        secret:
+          secretName: openid-training-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-front-gateway
+  name: web-front-gateway
+  namespace: openid-training
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: web-front-gateway
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#---------------------#
+# BFF web back-office #
+#---------------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-back-gateway
+  name: web-back-gateway
+  namespace: openid-training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-back-gateway
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: web-back-gateway
+    spec:
+      containers:
+        - image: ch4mp/openid-training-bff
+          imagePullPolicy: Always
+          name: web-back-gateway
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: openid-training-web-back
+      - name: secret-volume
+        secret:
+          secretName: openid-training-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-back-gateway
+  name: web-back-gateway
+  namespace: openid-training
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: web-back-gateway
+  type: ClusterIP
+status:
+  loadBalancer: {}

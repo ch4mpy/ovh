@@ -13,7 +13,7 @@ data:
   db-url: jdbc:postgresql://bao-loc-db/baoloc
   db-username: baoloc
   gateway-uri: https://bao-loc.demo.c4-soft.com
-  bao-loc-api-uri: http://bao-loc-api/v1
+  bao-loc-api-uri: http://bao-loc-api-v1
   ui-bff-uri: http://bao-loc-bff-ui
   ui-public-client-uri: http://bao-loc-public-client-ui
 ---
