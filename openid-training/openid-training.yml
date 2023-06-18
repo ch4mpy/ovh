@@ -10,11 +10,11 @@ data:
   server.shutdown: graceful
   oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
   oauth2-client-id: bCtRNTuQo43IQclmqxJ9QpYc6ppWeVDH
-  gateway-uri: https://openid-training.c4-soft.com
+  gateway-uri: https://mobile.front-office.openid-training.c4-soft.com
   greetings-api-uri: http://greetings-api-v1
   users-api-uri: http://users-api-v1
-  ui-host: https://openid-training.c4-soft.com
-  ui-path: /front-office
+  ui-host: https://mobile.front-office.openid-training.c4-soft.com
+  allowed-origins: http://localhost, https://mobile.front-office.openid-training.c4-soft.com
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,11 +25,11 @@ data:
   server.shutdown: graceful
   oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
   oauth2-client-id: pDy3JpZoenbLk9MqXYCfJK1mpxeUwkKL
-  gateway-uri: https://openid-training.c4-soft.com
+  gateway-uri: https://web.back-office.openid-training.c4-soft.com
   greetings-api-uri: http://greetings-api-v1
   users-api-uri: http://users-api-v1
   ui-host: http://web-back-ui
-  ui-path: /back-office
+  allowed-origins: https://web.back-office.openid-training.c4-soft.com, http://localhost:3002, https://localhost:3402
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -40,11 +40,11 @@ data:
   server.shutdown: graceful
   oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
   oauth2-client-id: HVZclhV1UiBPfPpc7tjgZ5oR0JaS0LUt
-  gateway-uri: https://openid-training.c4-soft.com
+  gateway-uri: https://web.front-office.openid-training.c4-soft.com
   greetings-api-uri: http://greetings-api-v1
   users-api-uri: http://users-api-v1
   ui-host: http://web-front-ui
-  ui-path: /front-office
+  allowed-origins: https://web.front-office.openid-training.c4-soft.com, http://localhost:3003, https://localhost:3403
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -54,6 +54,7 @@ metadata:
 data:
   server.shutdown: graceful
   oauth2-issuer: https://dev-ch4mpy.eu.auth0.com/
+  allowed-origins: https://web.back-office.openid-training.c4-soft.com, https://mobile.front-office.openid-training.c4-soft.com, https://web.front-office.openid-training.c4-soft.com, http://localhost, http://localhost:3000, http://localhost:3002, http://localhost:3003, https://localhost:3402, https://localhost:3403
 ---
 #---------------#
 # Greetings API #
@@ -77,7 +78,7 @@ spec:
         app: greetings-api-v1
     spec:
       containers:
-      - image: ch4mp/greetings-api-v1
+      - image: ch4mp/openid-training-greetings-api-v1
         name: greetings-api-v1
         resources: {}
         livenessProbe:
@@ -151,7 +152,7 @@ spec:
         app: users-api-v1
     spec:
       containers:
-      - image: ch4mp/users-api-v1
+      - image: ch4mp/openid-training-users-api-v1
         name: users-api-v1
         resources: {}
         livenessProbe:
@@ -348,6 +349,12 @@ spec:
           - name: secret-volume
             readOnly: true
             mountPath: /workspace/secret
+          env:
+          - name: OAUTH2_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: openid-training-secrets
+                key: mobile-front-secret
       volumes:
       - name: config-volume
         configMap:
@@ -429,6 +436,12 @@ spec:
           - name: secret-volume
             readOnly: true
             mountPath: /workspace/secret
+          env:
+          - name: OAUTH2_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: openid-training-secrets
+                key: web-front-secret
       volumes:
       - name: config-volume
         configMap:
@@ -510,6 +523,12 @@ spec:
           - name: secret-volume
             readOnly: true
             mountPath: /workspace/secret
+          env:
+          - name: OAUTH2_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: openid-training-secrets
+                key: web-back-secret
       volumes:
       - name: config-volume
         configMap:
