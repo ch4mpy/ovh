@@ -1,0 +1,95 @@
+#---------------#
+# Configuration #
+#---------------#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crs
+  namespace: demo-crs
+data:
+  server.port: "7443"
+  server.shutdown: graceful
+  keycloak-issuer: https://oidc.c4-soft.com/auth/realms/spring-addons
+  keycloak-client-id: spring-addons-bff
+  client-uri: https://crs.demo.c4-soft.com
+---
+#-------------------------------------------------------------#
+# Resource server (public REST API) and client (Thymeleaf UI) #
+#-------------------------------------------------------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: client-and-resource-server
+  name: client-and-resource-server
+  namespace: demo-crs
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: client-and-resource-server
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: client-and-resource-server
+    spec:
+      containers:
+      - image: ch4mp/resource-server_with_ui
+        name: client-and-resource-server
+        resources: {}
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 7443
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 7443
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+        - name: secret-volume
+          readOnly: true
+          mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: crs
+      - name: secret-volume
+        secret:
+          secretName: oauth2-clients-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: client-and-resource-server
+  name: client-and-resource-server
+  namespace: demo-crs
+spec:
+  ports:
+  - name: 80-7443
+    port: 80
+    protocol: TCP
+    targetPort: 7443
+  selector:
+    app: client-and-resource-server
+  type: ClusterIP
+status:
+  loadBalancer: {}

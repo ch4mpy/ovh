@@ -42,6 +42,7 @@ metadata:
   namespace: demo-bao-loc
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bao-loc-db
@@ -118,6 +119,7 @@ metadata:
   namespace: demo-bao-loc
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bao-loc-api-v1
@@ -201,6 +203,7 @@ metadata:
   namespace: demo-bao-loc
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bao-loc-bff-ui
@@ -247,6 +250,7 @@ metadata:
   namespace: demo-bao-loc
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bao-loc-public-client-ui
@@ -293,6 +297,7 @@ metadata:
   namespace: demo-bao-loc
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bao-loc-gateway

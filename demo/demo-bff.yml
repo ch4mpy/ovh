@@ -26,6 +26,7 @@ metadata:
   namespace: demo-bff
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bff-greetings-api
@@ -100,6 +101,7 @@ metadata:
   namespace: demo-bff
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bff-angular-ui
@@ -146,6 +148,7 @@ metadata:
   namespace: demo-bff
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bff-gateway
@@ -193,7 +196,7 @@ spec:
           name: bff
       - name: secret-volume
         secret:
-          secretName: bff-clients-secrets
+          secretName: oauth2-clients-secrets
 status: {}
 ---
 apiVersion: v1

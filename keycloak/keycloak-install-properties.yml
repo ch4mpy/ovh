@@ -5,26 +5,18 @@ image:
 
 command:
   - "/opt/keycloak/bin/kc.sh"
-  - "--verbose"
   - "start"
-  - "--auto-build"
   - "--http-enabled=true"
   - "--http-port=8080"
   - "--hostname-strict=false"
   - "--hostname-strict-https=false"
-  - "--spi-events-listener-jboss-logging-success-level=info"
-  - "--spi-events-listener-jboss-logging-error-level=warn"
-
 extraEnv: |
   - name: KEYCLOAK_ADMIN
     value: admin
   - name: KEYCLOAK_ADMIN_PASSWORD
-    value: change-me
+    value: Sk1ppIrat3!
   - name: JAVA_OPTS_APPEND
     value: >-
-      -XX:+UseContainerSupport
-      -XX:MaxRAMPercentage=50.0
-      -Djava.awt.headless=true
       -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
 dbchecker:
   enabled: true
@@ -34,7 +26,7 @@ database:
   hostname: keycloak-db-postgresql
   port: 5432
   username: keycloak
-  password: change-me
+  password: Sk1ppIrat3!
   database: keycloak
 
 replicas: 1

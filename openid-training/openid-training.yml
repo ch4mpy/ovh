@@ -68,6 +68,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: greetings-api-v1
@@ -142,6 +143,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: users-api-v1
@@ -216,6 +218,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: web-back-ui
@@ -262,6 +265,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: web-front-ui
@@ -308,6 +312,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: mobile-front-gateway
@@ -395,6 +400,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: web-front-gateway
@@ -482,6 +488,7 @@ metadata:
   namespace: openid-training
 spec:
   replicas: 1
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: web-back-gateway

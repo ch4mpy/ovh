@@ -4,8 +4,5 @@ global:
   postgresql:
     auth:
       username: keycloak
-      password: change-me
+      password: Sk1ppIrat3!
       database: keycloak
-primary:
-  persistence:
-    existingClaim: postgresql-keycloak
