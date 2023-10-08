@@ -1,7 +1,7 @@
 # See https://www.keycloak.org/server/configuration
 # See https://www.keycloak.org/server/all-config
 image:
-  tag: 21.0.2
+  tag: 22.0.1
 
 command:
   - "/opt/keycloak/bin/kc.sh"

@@ -9,12 +9,16 @@ metadata:
 data:
   server.shutdown: graceful
   spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
+  spring.security.oauth2.client.registration.quiz-admin.client-id: quiz-admin
+  spring.security.oauth2.client.registration.quiz-admin.provider: keycloak
+  spring.security.oauth2.client.registration.quiz-bff.client-id: quiz-bff
+  spring.security.oauth2.client.registration.quiz-bff.provider: keycloak
   keycloak-host: https://oidc.c4-soft.com
   keycloak-realm: quiz
-  keycloak-client-id: quiz-bff
   gateway-uri: https://quiz.c4-soft.com
   quiz-api-uri: http://quiz-api
-  ui-uri: http://quiz-ui
+  ui-host: http://quiz-ui
+  ui-external-uri: https://quiz.c4-soft.com/ui
 ---
 #-----#
 # API #
@@ -26,6 +30,7 @@ metadata:
     app: quiz-api
   name: quiz-api
   namespace: quiz
+spec:
   replicas: 1
   revisionHistoryLimit: 0
   selector:
