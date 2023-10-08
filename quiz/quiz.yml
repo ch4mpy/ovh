@@ -1,0 +1,226 @@
+#---------------#
+# Configuration #
+#---------------#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quiz
+  namespace: quiz
+data:
+  server.shutdown: graceful
+  spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
+  keycloak-host: https://oidc.c4-soft.com
+  keycloak-realm: quiz
+  keycloak-client-id: quiz-bff
+  gateway-uri: https://quiz.c4-soft.com
+  quiz-api-uri: http://quiz-api
+  ui-uri: http://quiz-ui
+---
+#-----#
+# API #
+#-----#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: quiz-api
+  name: quiz-api
+  namespace: quiz
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: quiz-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: quiz-api
+    spec:
+      containers:
+      - image: ch4mp/quiz-api
+        name: quiz-api
+        resources: {}
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 7084
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 7084
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+        - name: secret-volume
+          readOnly: true
+          mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: quiz
+      - name: secret-volume
+        secret:
+          secretName: quiz-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: quiz-api
+  name: quiz-api
+  namespace: quiz
+spec:
+  ports:
+  - name: 80-7084
+    port: 80
+    protocol: TCP
+    targetPort: 7084
+  selector:
+    app: quiz-api
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#------------#
+# Angular UI #
+#------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: quiz-ui
+  name: quiz-ui
+  namespace: quiz
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: quiz-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: quiz-ui
+    spec:
+      containers:
+      - image: ch4mp/quiz-ui
+        name: quiz-ui
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: quiz-ui
+  name: quiz-ui
+  namespace: quiz
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: quiz-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+#---------#
+# Gateway #
+#---------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bff
+  name: bff
+  namespace: quiz
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: bff
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: bff
+    spec:
+      containers:
+        - image: ch4mp/quiz-bff
+          imagePullPolicy: Always
+          name: bff
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            failureThreshold: 3
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          volumeMounts:
+          - name: config-volume
+            readOnly: true
+            mountPath: /workspace/config
+          - name: secret-volume
+            readOnly: true
+            mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: quiz
+      - name: secret-volume
+        secret:
+          secretName: quiz-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: bff
+  name: bff
+  namespace: quiz
+spec:
+  ports:
+  - name: 8080-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: bff
+  type: ClusterIP
+status:
+  loadBalancer: {}

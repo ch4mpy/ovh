@@ -1,0 +1,14 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgresql-quiz
+  namespace: quiz
+  labels:
+    app: postgresql
+spec:
+  storageClassName: csi-cinder-classic
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
