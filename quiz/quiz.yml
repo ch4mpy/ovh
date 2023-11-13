@@ -13,8 +13,9 @@ data:
   spring.security.oauth2.client.registration.quiz-admin.provider: keycloak
   spring.security.oauth2.client.registration.quiz-bff.client-id: quiz-bff
   spring.security.oauth2.client.registration.quiz-bff.provider: keycloak
-  keycloak-host: https://oidc.c4-soft.com
+  keycloak-host: https://oidc.c4-soft.com/auth
   keycloak-realm: quiz
+  oauth2-issuer: ${keycloak-host}/realms/${keycloak-realm}
   gateway-uri: https://quiz.c4-soft.com
   quiz-api-uri: http://quiz-api
   ui-host: http://quiz-ui
