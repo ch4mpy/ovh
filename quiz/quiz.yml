@@ -7,6 +7,8 @@ metadata:
   name: quiz
   namespace: quiz
 data:
+  scheme: https
+  hostname: quiz.c4-soft.com
   server.shutdown: graceful
   spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
   spring.security.oauth2.client.registration.quiz-admin.client-id: quiz-admin
@@ -179,7 +181,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8080
+              port: 7080
             failureThreshold: 3
             periodSeconds: 20
             successThreshold: 1
@@ -187,7 +189,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: 7080
             failureThreshold: 3
             periodSeconds: 20
             successThreshold: 1
@@ -221,10 +223,10 @@ metadata:
   namespace: quiz
 spec:
   ports:
-  - name: 8080-8080
-    port: 8080
+  - name: 7080-7080
+    port: 7080
     protocol: TCP
-    targetPort: 8080
+    targetPort: 7080
   selector:
     app: bff
   type: ClusterIP

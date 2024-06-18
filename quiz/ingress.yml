@@ -7,6 +7,7 @@ metadata:
     # This annotation indicates the issuer to use
     cert-manager.io/cluster-issuer: letsencrypt-production
     acme.cert-manager.io/http01-edit-in-place: "true"
+    nginx.ingress.kubernetes.io/app-root: /ui
   name: bff
   namespace: quiz
 spec:
@@ -18,10 +19,17 @@ spec:
   - host: quiz.c4-soft.com
     http:
       paths:
+      - path: /ui
+        pathType: Prefix
+        backend:
+          service: 
+            name: quiz-ui
+            port:
+              number: 80
       - path: /
         pathType: Prefix
         backend:
           service: 
             name: bff
             port:
-              number: 8080
+              number: 7080
