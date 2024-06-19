@@ -8,7 +8,7 @@ metadata:
   namespace: quiz
 data:
   scheme: https
-  hostname: quiz.c4-soft.com
+  reverse-proxy-uri: https://quiz.c4-soft.com
   server.shutdown: graceful
   spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
   spring.security.oauth2.client.registration.quiz-admin.client-id: quiz-admin
@@ -18,7 +18,6 @@ data:
   keycloak-host: https://oidc.c4-soft.com/auth
   keycloak-realm: quiz
   oauth2-issuer: ${keycloak-host}/realms/${keycloak-realm}
-  gateway-uri: https://quiz.c4-soft.com
   quiz-api-uri: http://quiz-api
   ui-host: http://quiz-ui
   ui-external-uri: https://quiz.c4-soft.com/ui
