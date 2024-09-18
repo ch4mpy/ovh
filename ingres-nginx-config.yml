@@ -1,0 +1,14 @@
+# https://andrewlock.net/fixing-nginx-upstream-sent-too-big-header-error-when-running-an-ingress-controller-in-kubernetes/
+# kubectl edit -n ingress-nginx deployment.apps/ingress-nginx-controller
+# to add the following to arguments:
+#         - --configmap=ingress-nginx/nginx-configuration
+# proxy-buffer-size: "16k" prevents an error with Keycloak large headers
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+  labels:
+    k8s-app: ingress-nginx-controller
+data:
+  proxy-buffer-size: "16k"

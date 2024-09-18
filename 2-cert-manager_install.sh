@@ -10,6 +10,14 @@ helm install \
   --set installCRDs=true \
   --set webhook.timeoutSeconds=30
 
+helm upgrade -i cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --set replicas=1 \
+  --set rbac.create=true \
+  --set prometheus.enabled=false \
+  --set installCRDs=true \
+  --set webhook.timeoutSeconds=30
+
 kubectl apply -f lets-encrypt-issuer.yml
 
 export INGRESS_URL=$(kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
