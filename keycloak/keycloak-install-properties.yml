@@ -16,6 +16,20 @@ extraEnv: |
     value: admin
   - name: KEYCLOAK_ADMIN_PASSWORD
     value: Sk1ppIrat3!
+  - name: KC_HOSTNAME
+    value: "https://oidc.c4-soft.com/auth/"
+  - name: KC_HOSTNAME_ADMIN
+    value: "https://oidc.c4-soft.com/auth/"
+  - name: KC_BACKCHANNEL_DYNAMIC
+    value: "true"
+  - name: HOSTNAME_STRICT_HTTPS
+    value: "true"
+  - name: KC_HTTP_ENABLED
+    value: "true"
+  - name: KC_PROXY
+    value: edge
+  - name: KC_LOG_LEVEL
+    value: "DEBUG"
   - name: JAVA_OPTS_APPEND
     value: >-
       -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
