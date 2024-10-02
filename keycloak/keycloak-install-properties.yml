@@ -1,15 +1,16 @@
 # See https://www.keycloak.org/server/configuration
 # See https://www.keycloak.org/server/all-config
-image:
-  tag: 22.0.1
 
 command:
   - "/opt/keycloak/bin/kc.sh"
   - "start"
   - "--http-enabled=true"
+  - "--health-enabled=true"
+  - "--metrics-enabled=true"
+  - "--log-level=DEBUG"
   - "--http-port=8080"
-  - "--hostname-strict=false"
-  - "--hostname-strict-https=false"
+  - "--hostname=oidc.c4-soft.com"
+  - "--proxy=edge"
 extraEnv: |
   - name: KEYCLOAK_ADMIN
     value: admin
