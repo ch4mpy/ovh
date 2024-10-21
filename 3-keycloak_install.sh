@@ -5,9 +5,13 @@ helm repo add codecentric https://codecentric.github.io/helm-charts
 helm repo update
 helm install keycloak-db oci://registry-1.docker.io/bitnamicharts/postgresql -n keycloak --values ./keycloak/keycloak-postgresql-properties.yml
 helm upgrade -i keycloak-db oci://registry-1.docker.io/bitnamicharts/postgresql -n keycloak --values ./keycloak/keycloak-postgresql-properties.yml
-helm install keycloak codecentric/keycloakx -n keycloak -f keycloak/keycloak-install-properties.yml
-helm upgrade -i keycloak codecentric/keycloakx -n keycloak -f keycloak/keycloak-install-properties.yml
-kubectl apply -f keycloak/ingress-nginx.yml
+#helm install keycloak codecentric/keycloakx -n keycloak -f keycloak/keycloak-install-properties.yml
+#helm upgrade -i keycloak codecentric/keycloakx -n keycloak -f keycloak/keycloak-install-properties.yml
+#kubectl apply -f keycloak/ingress-nginx.yml
+kubectl create secret generic keycloak-secrets -n keycloak \
+  --from-literal=KC_DB_PASSWORD=Sk1ppIrat3! \
+  --from-literal=KEYCLOAK_ADMIN_PASSWORD=Sk1ppIrat3!
+kubectl apply -f keycloak/keycloak.yml
 set +H
 echo "+------------------------------------------------------------------------+"
 echo "|               /!\\ See comment in ingress-nginx.yml /!\\                |"
