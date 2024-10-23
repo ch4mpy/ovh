@@ -9,9 +9,17 @@ metadata:
 data:
   scheme: https
   hostname: quiz.c4-soft.com
+  keycloak-host: https://oidc.c4-soft.com/auth
+  reverse-proxy-uri: https://quiz.c4-soft.com
+  quiz-api-internal-uri: http://quiz-api
   spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
-  quiz-api-uri: http://quiz-api
-  ui-host: http://quiz-ui
+  spring.security.oauth2.client.registration.quiz-admin.provider: keycloak
+  spring.security.oauth2.client.registration.quiz-admin.client-id: quiz-admin
+  spring.security.oauth2.client.registration.quiz-admin.authorization-grant-type: client_credentials
+  spring.security.oauth2.client.registration.quiz-bff.provider: keycloak
+  spring.security.oauth2.client.registration.quiz-bff.client-id: quiz-bff
+  spring.security.oauth2.client.registration.quiz-bff.authorization-grant-type: authorization_code
+  com.c4-soft.springaddons.oidc.client.oauth2-redirections.pre-authorization-code: FOUND
 ---
 #-----#
 # API #
