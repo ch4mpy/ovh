@@ -1,0 +1,50 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  namespace: rabbitmq-ws
+  name: websockets
+spec:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 800m
+      memory: 1Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: rabbitmq-ws
+  name: user-session-events-creds
+type: Opaque
+stringData:
+  username: quiz-bff
+  password: u7L07tfQYPP1y3wie9hqzFEEB6
+  uri: https://rabbitmq-ws.c4-soft.com
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: user-example
+  namespace: rabbitmq-system
+spec:
+  rabbitmqClusterReference:
+    name: websockets
+  importCredentialsSecret:
+    name: user-session-events-creds
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  namespace: rabbitmq-ws
+  name: user-session-events-queue
+spec:
+  name: user-session-events
+  autoDelete: false
+  durable: false
+  rabbitmqClusterReference:
+    name: websockets
+    connectionSecret:
+      name: user-session-events-creds

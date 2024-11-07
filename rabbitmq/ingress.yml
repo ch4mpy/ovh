@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  namespace: rabbitmq-ws
+  name: admin-ui
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - rabbitmq-ws.c4-soft.com
+      secretName: rabbitmq-ws-tls
+  rules:
+  - host: rabbitmq-ws.c4-soft.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: websockets
+            port:
+              number: 15672
