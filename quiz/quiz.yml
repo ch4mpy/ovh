@@ -46,7 +46,13 @@ spec:
       containers:
       - image: ch4mp/quiz-api
         name: quiz-api
-        resources: {}
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
@@ -127,7 +133,13 @@ spec:
       containers:
       - image: ch4mp/quiz-ui
         name: quiz-ui
-        resources: {}
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
 status: {}
 ---
 apiVersion: v1
@@ -172,37 +184,43 @@ spec:
         app: bff
     spec:
       containers:
-        - image: ch4mp/quiz-bff
-          imagePullPolicy: Always
-          name: bff
-          resources: {}
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 7080
-            failureThreshold: 3
-            periodSeconds: 20
-            successThreshold: 1
-            timeoutSeconds: 3
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 7080
-            failureThreshold: 3
-            periodSeconds: 20
-            successThreshold: 1
-            timeoutSeconds: 10
-          lifecycle:
-            preStop:
-              exec:
-                command: ["sh", "-c", "sleep 10"]
-          volumeMounts:
-          - name: config-volume
-            readOnly: true
-            mountPath: /workspace/config
-          - name: secret-volume
-            readOnly: true
-            mountPath: /workspace/secret
+      - image: ch4mp/quiz-bff
+        imagePullPolicy: Always
+        name: bff
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 7080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 7080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+        - name: secret-volume
+          readOnly: true
+          mountPath: /workspace/secret
       volumes:
       - name: config-volume
         configMap:

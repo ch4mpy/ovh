@@ -7,44 +7,53 @@ spec:
   replicas: 1
   resources:
     requests:
+      cpu: 250m
+      memory: 500Mi
+    limits:
       cpu: 500m
       memory: 1Gi
-    limits:
-      cpu: 800m
-      memory: 1Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+  namespace: rabbitmq-ws
+  name: admin-ui
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - ws-management.c4-soft.com
+      secretName: ws-management-tls
+  rules:
+  - host: ws-management.c4-soft.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: websockets
+            port:
+              number: 15672
 ---
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
   namespace: rabbitmq-ws
-  name: user-session-events-creds
-type: Opaque
-stringData:
-  username: quiz-bff
-  password: u7L07tfQYPP1y3wie9hqzFEEB6
-  uri: https://rabbitmq-ws.c4-soft.com
----
-apiVersion: rabbitmq.com/v1beta1
-kind: User
-metadata:
-  name: user-example
-  namespace: rabbitmq-system
+  name: amqp-expose
+  annotations:
+    loadbalancer.ovhcloud.com/class: iolb
 spec:
-  rabbitmqClusterReference:
-    name: websockets
-  importCredentialsSecret:
-    name: user-session-events-creds
----
-apiVersion: rabbitmq.com/v1beta1
-kind: Queue
-metadata:
-  namespace: rabbitmq-ws
-  name: user-session-events-queue
-spec:
-  name: user-session-events
-  autoDelete: false
-  durable: false
-  rabbitmqClusterReference:
-    name: websockets
-    connectionSecret:
-      name: user-session-events-creds
+  ports:
+  - appProtocol: amqp
+    name: amqp
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+  selector:
+    app.kubernetes.io/name: websockets
+  type: LoadBalancer
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
