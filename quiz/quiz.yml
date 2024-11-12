@@ -49,10 +49,10 @@ spec:
         resources:
           requests:
             cpu: 250m
-            memory: 256Mi
+            memory: 100Mi
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 750m
+            memory: 750Mi
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
@@ -66,9 +66,9 @@ spec:
             path: /actuator/health/readiness
             port: 7084
           failureThreshold: 3
-          periodSeconds: 20
+          periodSeconds: 30
           successThreshold: 1
-          timeoutSeconds: 10
+          timeoutSeconds: 20
         lifecycle:
           preStop:
             exec:
@@ -135,11 +135,11 @@ spec:
         name: quiz-ui
         resources:
           requests:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 100m
+            memory: 100Mi
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 250m
+            memory: 200Mi
 status: {}
 ---
 apiVersion: v1
@@ -189,11 +189,11 @@ spec:
         name: bff
         resources:
           requests:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 100m
+            memory: 200Mi
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 750m
+            memory: 300Mi
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
@@ -207,7 +207,7 @@ spec:
             path: /actuator/health/readiness
             port: 7080
           failureThreshold: 3
-          periodSeconds: 20
+          periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 10
         lifecycle:
