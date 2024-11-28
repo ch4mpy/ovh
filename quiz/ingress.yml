@@ -31,3 +31,10 @@ spec:
             name: bff
             port:
               number: 7080
+      - path: /.well-known
+        pathType: Prefix
+        backend:
+          service:
+            name: quiz-well-known
+            port:
+              number: 80

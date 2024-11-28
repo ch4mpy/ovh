@@ -248,3 +248,56 @@ spec:
   type: ClusterIP
 status:
   loadBalancer: {}
+---
+#-------------#
+# .well-known #
+#-------------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: quiz-well-known
+  name: quiz-well-known
+  namespace: quiz
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: quiz-well-known
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: quiz-well-known
+    spec:
+      containers:
+      - image: ch4mp/quiz-well-known
+        name: quiz-well-known
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: quiz-well-known
+  name: quiz-well-known
+  namespace: quiz
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: quiz-well-known
+  type: ClusterIP
+status:
+  loadBalancer: {}
