@@ -1,0 +1,29 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"rabbitmq.com/v1beta1","kind":"Queue","metadata":{"annotations":{},"name":"user-session-events-queue","namespace":"rabbitmq-ws"},"spec":{"name":"user-session-events","rabbitmqClusterReference":{"connectionSecret":{"name":"user-session-events-creds"}}}}
+  creationTimestamp: "2024-11-07T00:32:38Z"
+  deletionGracePeriodSeconds: 0
+  deletionTimestamp: "2024-11-07T03:29:51Z"
+  finalizers: []
+  generation: 2
+  name: user-session-events-queue
+  namespace: rabbitmq-ws
+  resourceVersion: "15177283795"
+  uid: 0bfc55ce-4b98-4f3b-993a-19bde26c8c0d
+spec:
+  name: user-session-events
+  rabbitmqClusterReference:
+    connectionSecret:
+      name: user-session-events-creds
+  vhost: /
+status:
+  conditions:
+  - lastTransitionTime: "2024-11-07T00:32:39Z"
+    message: 'failed to retrieve cluster from reference: Secret "user-session-events-creds"
+      not found'
+    reason: FailedCreateOrUpdate
+    status: "False"
+    type: Ready

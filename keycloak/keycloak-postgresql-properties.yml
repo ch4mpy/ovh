@@ -4,5 +4,5 @@ global:
   postgresql:
     auth:
       username: keycloak
-      password: Sk1ppIrat3!
+      password: change-me
       database: keycloak

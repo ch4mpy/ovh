@@ -9,8 +9,8 @@ helm upgrade -i keycloak-db oci://registry-1.docker.io/bitnamicharts/postgresql 
 #helm upgrade -i keycloak codecentric/keycloakx -n keycloak -f keycloak/keycloak-install-properties.yml
 #kubectl apply -f keycloak/ingress-nginx.yml
 kubectl create secret generic keycloak-secrets -n keycloak \
-  --from-literal=KC_DB_PASSWORD=Sk1ppIrat3! \
-  --from-literal=KEYCLOAK_ADMIN_PASSWORD=Sk1ppIrat3!
+  --from-literal=KC_DB_PASSWORD=change-me \
+  --from-literal=KEYCLOAK_ADMIN_PASSWORD=change-me
 kubectl apply -f keycloak/keycloak.yml
 set +H
 echo "+------------------------------------------------------------------------+"

@@ -4,5 +4,5 @@ global:
   postgresql:
     auth:
       username: quiz
-      password: qsdjfhMLioidihfOHUHCVP654
+      password: change-me
       database: quiz
