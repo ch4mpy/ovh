@@ -49,7 +49,7 @@ spec:
         resources:
           requests:
             cpu: 250m
-            memory: 100Mi
+            memory: 250Mi
           limits:
             cpu: 750m
             memory: 750Mi
@@ -108,9 +108,9 @@ spec:
 status:
   loadBalancer: {}
 ---
-#------------#
-# Angular UI #
-#------------#
+#---------#
+# Quiz UI #
+#---------#
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -161,6 +161,59 @@ spec:
 status:
   loadBalancer: {}
 ---
+#-------#
+# JW UI #
+#-------#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jw-ui
+  name: jw-ui
+  namespace: quiz
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: jw-ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: jw-ui
+    spec:
+      containers:
+      - image: ch4mp/jw-ui
+        name: jw-ui
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 250m
+            memory: 200Mi
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jw-ui
+  name: jw-ui
+  namespace: quiz
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: jw-ui
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
 #---------#
 # Gateway #
 #---------#
@@ -190,10 +243,10 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 200Mi
+            memory: 250Mi
           limits:
             cpu: 750m
-            memory: 300Mi
+            memory: 750Mi
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness

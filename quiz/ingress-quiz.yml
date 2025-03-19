@@ -4,8 +4,9 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-production
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
     nginx.ingress.kubernetes.io/app-root: /ui/
-  name: ui
+  name: quiz-ingress
   namespace: quiz
 spec:
   ingressClassName: nginx
@@ -17,22 +18,22 @@ spec:
   - host: quiz.c4-soft.com
     http:
       paths:
-      - path: /ui
-        pathType: Prefix
+      - path: /(ui/.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: quiz-ui
             port:
               number: 80
-      - path: /bff/v1
-        pathType: Prefix
+      - path: /bff/(.*)
+        pathType: ImplementationSpecific
         backend:
           service: 
             name: bff
             port:
               number: 7080
-      - path: /.well-known
-        pathType: Prefix
+      - path: /(\.well-known/.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: quiz-well-known
