@@ -4,13 +4,34 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quiz
+  name: quiz-config
   namespace: quiz
 data:
   scheme: https
   hostname: quiz.c4-soft.com
   keycloak-host: https://oidc.c4-soft.com/auth
   reverse-proxy-uri: https://quiz.c4-soft.com
+  quiz-api-internal-uri: http://quiz-api
+  spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
+  spring.security.oauth2.client.registration.quiz-admin.provider: keycloak
+  spring.security.oauth2.client.registration.quiz-admin.client-id: quiz-admin
+  spring.security.oauth2.client.registration.quiz-admin.authorization-grant-type: client_credentials
+  spring.security.oauth2.client.registration.quiz-bff.provider: keycloak
+  spring.security.oauth2.client.registration.quiz-bff.client-id: quiz-bff
+  spring.security.oauth2.client.registration.quiz-bff.authorization-grant-type: authorization_code
+  com.c4-soft.springaddons.oidc.client.oauth2-redirections.pre-authorization-code: FOUND
+  logging.level.org.springframework.security: DEBUG
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jw-config
+  namespace: quiz
+data:
+  scheme: https
+  hostname: jw.c4-soft.com
+  keycloak-host: https://oidc.c4-soft.com/auth
+  reverse-proxy-uri: https://jw.c4-soft.com
   quiz-api-internal-uri: http://quiz-api
   spring.datasource.url: jdbc:postgresql://quiz-db-postgresql:5432/quiz
   spring.security.oauth2.client.registration.quiz-admin.provider: keycloak
@@ -83,7 +104,7 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: quiz
+          name: quiz-config
       - name: secret-volume
         secret:
           secretName: quiz-secrets
@@ -221,8 +242,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: bff
-  name: bff
+    app: quiz-bff
+  name: quiz-bff
   namespace: quiz
 spec:
   replicas: 1
@@ -239,7 +260,7 @@ spec:
       containers:
       - image: ch4mp/quiz-bff
         imagePullPolicy: Always
-        name: bff
+        name: quiz-bff
         resources:
           requests:
             cpu: 100m
@@ -277,7 +298,7 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: quiz
+          name: quiz-config
       - name: secret-volume
         secret:
           secretName: quiz-secrets
@@ -287,8 +308,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: bff
-  name: bff
+    app: quiz-bff
+  name: quiz-bff
   namespace: quiz
 spec:
   ports:
@@ -297,7 +318,92 @@ spec:
     protocol: TCP
     targetPort: 7080
   selector:
-    app: bff
+    app: quiz-bff
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jw-bff
+  name: jw-bff
+  namespace: quiz
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: jw-bff
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: jw-bff
+    spec:
+      containers:
+      - image: ch4mp/quiz-bff
+        imagePullPolicy: Always
+        name: jw-bff
+        resources:
+          requests:
+            cpu: 100m
+            memory: 250Mi
+          limits:
+            cpu: 750m
+            memory: 750Mi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 7080
+          failureThreshold: 3
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 7080
+          failureThreshold: 3
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 10
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /workspace/config
+        - name: secret-volume
+          readOnly: true
+          mountPath: /workspace/secret
+      volumes:
+      - name: config-volume
+        configMap:
+          name: jw-config
+      - name: secret-volume
+        secret:
+          secretName: quiz-secrets
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: jw-bff
+  name: jw-bff
+  namespace: quiz
+spec:
+  ports:
+  - name: 7080-7080
+    port: 7080
+    protocol: TCP
+    targetPort: 7080
+  selector:
+    app: jw-bff
   type: ClusterIP
 status:
   loadBalancer: {}

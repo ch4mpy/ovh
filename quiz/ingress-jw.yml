@@ -29,6 +29,6 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service: 
-            name: bff
+            name: jw-bff
             port:
               number: 7080
